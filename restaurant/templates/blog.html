@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section>
+    <article>
+        <h1>User Comments</h1>
+        <form method="POST" id="form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" id="button">Submit</button>  
+        
+    </article>
+</section>
+
+<script>
+document.getElementById('form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var form = document.getElementById('form');
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form)})
+    .then(response => response.json())
+    .then(data => {
+        if(data.message === 'success') {
+            alert('Comment submitted');
+            form.reset();
+        }
+    });
+});
+
+</script>
+{% endblock %}

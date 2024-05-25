@@ -23,3 +23,11 @@ class Menu(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+ # Comments
+
+
+class UserComments(models.Model):
+    first_name = models.CharField(max_length=200)
+    last_name = models.CharField(max_length=200)
+    comment = models.CharField(max_length=1000)
