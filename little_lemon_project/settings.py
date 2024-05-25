@@ -81,9 +81,10 @@ WSGI_APPLICATION = 'little_lemon_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default='sqlite:///db.sqlite3')
+    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 }
-
+# Optional: Set other settings for PostgreSQL
+DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 # The settings for media files have been updated for the Graded assessment
 MEDIA_URL = '/media/'
 
