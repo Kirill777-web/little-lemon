@@ -15,11 +15,22 @@ import os
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Initialize environment variables
 env = environ.Env()
 environ.Env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+# Secret Key and Debug Mode
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env.bool('DEBUG', default=False)
+
+# Allowed Hosts
+ALLOWED_HOSTS = ['little-lemon-app-ce2c04df10ca.herokuapp.com']
+
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -38,20 +49,6 @@ LOGGING = {
         },
     },
 }
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vvsx!l6f&*jtm+6hy5tp=w$vx$y-*z)iom)=-1o5ewfer-41%l'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
-
-ALLOWED_HOSTS = [
-    'little-lemon-app-ce2c04df10ca.herokuapp.com']
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -102,6 +99,7 @@ WSGI_APPLICATION = 'little_lemon_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# Database
 DATABASES = {
     'default': env.db(),
 }
@@ -145,10 +143,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 # The settings for static files have been updated for the Graded assessment
+# Static Files
 STATIC_URL = '/static/'
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'restaurant', 'static'),
 ]
