@@ -52,32 +52,42 @@
     fetch("{% url 'bookings' %}?date=" + date)
       .then(r => r.json())
       .then(data => {
-        let reserved_slots = [];
-        let bookings = '';
+        if (Array.isArray(data)) {
+          let reserved_slots = [];
+          let bookings = '';
 
-        data.forEach(item => {
-          reserved_slots.push(item.fields.reservation_slot);
-          bookings += `<p>${item.fields.first_name} - ${formatTime(item.fields.reservation_slot)}</p>`;
-        });
+          data.forEach(item => {
+            reserved_slots.push(item.fields.reservation_slot);
+            bookings += `<p>${item.fields.first_name} - ${formatTime(item.fields.reservation_slot)}</p>`;
+          });
 
-        let slot_options = `<option value="0" disabled>Select time</option>`;
-        for (let i = 9; i < 21; i++){
-          const label = formatTime(i);
-          const formattedTime = `${i.toString().padStart(2, "0")}:00`;
-          if (reserved_slots.includes(formattedTime)){
-            slot_options += `<option value="${formattedTime}" disabled>${label}</option>`;
-          } else {
-            slot_options += `<option value="${formattedTime}">${label}</option>`;
+          let slot_options = `<option value="0" disabled>Select time</option>`;
+          for (let i = 9; i < 21; i++){
+            const label = formatTime(i);
+            const formattedTime = `${i.toString().padStart(2, "0")}:00`;
+            if (reserved_slots.includes(formattedTime)){
+              slot_options += `<option value="${formattedTime}" disabled>${label}</option>`;
+            } else {
+              slot_options += `<option value="${formattedTime}">${label}</option>`;
+            }
           }
-        }
 
-        document.getElementById('reservation_slot').innerHTML = slot_options;
-        if(bookings === ''){
-          bookings = "No bookings";
+          document.getElementById('reservation_slot').innerHTML = slot_options;
+          if(bookings === ''){
+            bookings = "No bookings";
+          }
+          document.getElementById('bookings').innerHTML = bookings;
+        } else {
+          console.error('Expected an array but got', data);
+          document.getElementById('bookings').innerHTML = 'Error fetching bookings';
         }
-        document.getElementById('bookings').innerHTML = bookings;
       })
-  }
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('bookings').innerHTML = 'Error fetching bookings';
+      });
+}
+
 
   function formatTime(time) {
     const ampm = time < 12 ? 'AM' : 'PM';
