@@ -9,7 +9,9 @@
     <div class="row">
       <!--Begin col-->
       <div class="column">
-        <pre id="bookings"></pre>
+        {% for booking in bookings %}
+          <p>Name: {{ booking.first_name }} {{ booking.last_name }}, Date: {{ booking.reservation_date }}, Slot: {{ booking.reservation_slot }}</p>
+        {% endfor %}
       </div>
       <!--End col-->
 
@@ -25,47 +27,6 @@
       <!--End col-->
     </div>
     <!--End row-->
-
-
-
-
   </article>
 </section>
-<script>
-  const bookings = JSON.parse('{{ bookings|safe }}')
-  console.log(bookings);
-
-  const bookingsContainer = document.getElementById('bookings');
-
-  bookings.forEach(booking => {
-    const bookingElement = document.createElement('p');
-    bookingElement.textContent = `Name: ${booking.fields.first_name}, Date: ${booking.fields.reservation_date}, Slot: ${booking.fields.reservation_slot}`;
-    bookingsContainer.appendChild(bookingElement);
-  });
-
-  document.getElementById('button').addEventListener('click', function (e) {
-    const formdata = {
-      first_name: document.getElementById('first_name').value,
-      reservation_date: document.getElementById('reservation_date').value,
-      reservation_slot: document.getElementById('reservation_slot').value,
-    }
-
-    const csrftoken = document.cookie.split('; ').find(row => row.startsWith('csrftoken')).split('=')[1];
-
-    fetch("{% url 'bookings' %}", { 
-      method: 'post', 
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      },
-      body: JSON.stringify(formdata) 
-    })
-      .then(r => r.text())
-      .then(data => {
-        getBookings()
-      })
-      .catch(error => console.error('Error:', error));
-  })
-</script>
 {% endblock %}
-

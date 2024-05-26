@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 import json
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -66,32 +66,31 @@ def bookings(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            exist = Booking.objects.filter(
-                reservation_date=data['reservation_date'],
-                reservation_slot=data['reservation_slot']
-            ).exists()
+            reservation_time = f"{int(data['reservation_slot']):02}:00"
+            data['reservation_slot'] = reservation_time
+
+            exist = Booking.objects.filter(reservation_date=data['reservation_date']).filter(
+                reservation_slot=data['reservation_slot']).exists()
+
             if not exist:
-                Booking.objects.create(
+                booking = Booking(
                     first_name=data['first_name'],
                     last_name=data['last_name'],
                     guest_number=data['guest_number'],
                     reservation_date=data['reservation_date'],
                     reservation_slot=data['reservation_slot'],
                 )
-                return JsonResponse({'success': 1})
+                booking.save()
+                return JsonResponse({"success": True}, status=201)
             else:
-                return JsonResponse({'error': 'Booking already exists'}, status=400)
+                return JsonResponse({"error": "Time slot already booked"}, status=400)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({"error": str(e)}, status=400)
 
-    elif request.method == 'GET':
-        try:
-            date = request.GET.get('date', datetime.today().date())
-            bookings = Booking.objects.filter(reservation_date=date)
-            booking_json = serializers.serialize('json', bookings)
-            return HttpResponse(booking_json, content_type='application/json')
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+    date = request.GET.get('date', datetime.today().date())
+    bookings = Booking.objects.filter(reservation_date=date)
+    booking_json = serializers.serialize('json', bookings)
+    return HttpResponse(booking_json, content_type='application/json')
 
 # Comments View
 
