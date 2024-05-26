@@ -10,6 +10,7 @@ Little Lemon is a restaurant application designed to provide users with an excep
 - HTML
 - CSS
 - PostgreSQL
+- Heroku
 
 ## App Link
 [Little Lemon](https://little-lemon-app-ce2c04df10ca.herokuapp.com/)
