@@ -12,10 +12,14 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
+import environ
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env(env_file=os.path.join(BASE_DIR, ".env"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -82,10 +86,9 @@ WSGI_APPLICATION = 'little_lemon_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    'default': env.db(),
 }
-# Optional: Set other settings for PostgreSQL
-DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+
 # The settings for media files have been updated for the Graded assessment
 MEDIA_URL = '/media/'
 
