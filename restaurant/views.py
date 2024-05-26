@@ -66,12 +66,8 @@ def bookings(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            reservation_time = f"{int(data['reservation_slot']):02}:00"
-            data['reservation_slot'] = reservation_time
-
             exist = Booking.objects.filter(reservation_date=data['reservation_date']).filter(
                 reservation_slot=data['reservation_slot']).exists()
-
             if not exist:
                 booking = Booking(
                     first_name=data['first_name'],
@@ -81,16 +77,20 @@ def bookings(request):
                     reservation_slot=data['reservation_slot'],
                 )
                 booking.save()
-                return JsonResponse({"success": True}, status=201)
+                return JsonResponse({'success': True})
             else:
-                return JsonResponse({"error": "Time slot already booked"}, status=400)
+                return JsonResponse({'success': False, 'error': 'Slot already booked'}, status=400)
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
     date = request.GET.get('date', datetime.today().date())
-    bookings = Booking.objects.filter(reservation_date=date)
-    booking_json = serializers.serialize('json', bookings)
-    return HttpResponse(booking_json, content_type='application/json')
+
+    try:
+        bookings = Booking.objects.filter(reservation_date=date)
+        booking_json = serializers.serialize('json', bookings)
+        return JsonResponse(booking_json, safe=False)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # Comments View
 
