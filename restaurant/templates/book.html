@@ -111,7 +111,12 @@
       },
       body: JSON.stringify(formdata)
     })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) {
+          throw new Error(`HTTP error! status: ${r.status}`);
+        }
+        return r.json();
+      })
       .then(response => {
         console.log('Response from server:', response);
         if (response.success) {
