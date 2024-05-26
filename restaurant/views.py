@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime
 import json
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -64,33 +64,41 @@ def display_menu_items(request, pk=None):
 @csrf_exempt
 def bookings(request):
     if request.method == 'POST':
+        data = json.loads(request.body)
         try:
-            data = json.loads(request.body)
-            exist = Booking.objects.filter(reservation_date=data['reservation_date']).filter(
-                reservation_slot=data['reservation_slot']).exists()
-            if not exist:
-                booking = Booking(
-                    first_name=data['first_name'],
-                    last_name=data['last_name'],
-                    guest_number=data['guest_number'],
-                    reservation_date=data['reservation_date'],
-                    reservation_slot=data['reservation_slot'],
-                )
-                booking.save()
-                return JsonResponse({'success': True})
-            else:
-                return JsonResponse({'success': False, 'error': 'Slot already booked'}, status=400)
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            reservation_slot = datetime.strptime(
+                data['reservation_slot'], '%H:%M').time()
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid time format. It must be in HH:MM format.'})
+
+        exist = Booking.objects.filter(
+            reservation_date=data['reservation_date'],
+            reservation_slot=reservation_slot
+        ).exists()
+
+        if not exist:
+            booking = Booking(
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+                guest_number=data['guest_number'],
+                reservation_date=data['reservation_date'],
+                reservation_slot=reservation_slot,
+            )
+            booking.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Reservation already exists for this time slot.'})
 
     date = request.GET.get('date', datetime.today().date())
-
-    try:
-        bookings = Booking.objects.filter(reservation_date=date)
-        booking_json = serializers.serialize('json', bookings)
-        return JsonResponse(booking_json, safe=False)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    bookings = Booking.objects.filter(reservation_date=date)
+    booking_list = [{
+        'first_name': b.first_name,
+        'last_name': b.last_name,
+        'guest_number': b.guest_number,
+        'reservation_date': b.reservation_date.isoformat(),
+        'reservation_slot': b.reservation_slot.strftime('%H:%M'),
+    } for b in bookings]
+    return JsonResponse(booking_list, safe=False)
 
 # Comments View
 
