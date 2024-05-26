@@ -3,6 +3,7 @@ import json
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.core import serializers
+from .models import Booking
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -10,7 +11,7 @@ from django.http import Http404
 from django.shortcuts import render, redirect
 from .forms import BookingForm, CommentForm
 from .models import Menu, UserComments
-
+import traceback
 
 # Create your views here.
 
@@ -63,28 +64,37 @@ def display_menu_items(request, pk=None):
 @csrf_exempt
 def bookings(request):
     if request.method == 'POST':
-        data = json.load(request)
-        exist = Booking.objects.filter(reservation_date=data['reservation_date']).filter(
-            reservation_slot=data['reservation_slot']).exists()
-        if exist == False:
-            booking = Booking(
-                first_name=data['first_name'],
+        try:
+            data = json.loads(request.body)
+            exist = Booking.objects.filter(
                 reservation_date=data['reservation_date'],
-                reservation_slot=data['reservation_slot'],
-            )
-            booking.save()
-        else:
-            return HttpResponse("{'error':1}", content_type='application/json')
+                reservation_slot=data['reservation_slot']
+            ).exists()
+            if not exist:
+                Booking.objects.create(
+                    first_name=data['first_name'],
+                    last_name=data['last_name'],
+                    guest_number=data['guest_number'],
+                    reservation_date=data['reservation_date'],
+                    reservation_slot=data['reservation_slot'],
+                )
+                return JsonResponse({'success': 1})
+            else:
+                return JsonResponse({'error': 'Booking already exists'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
-    date = request.GET.get('date', datetime.today().date())
-
-    bookings = Booking.objects.all().filter(reservation_date=date)
-    booking_json = serializers.serialize('json', bookings)
-
-    return HttpResponse(booking_json, content_type='application/json')
-
+    elif request.method == 'GET':
+        try:
+            date = request.GET.get('date', datetime.today().date())
+            bookings = Booking.objects.filter(reservation_date=date)
+            booking_json = serializers.serialize('json', bookings)
+            return HttpResponse(booking_json, content_type='application/json')
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
 # Comments View
+
 
 def form_view(request):
     form = CommentForm()
