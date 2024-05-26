@@ -1,18 +1,13 @@
 from datetime import datetime
 import json
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.core import serializers
-from .models import Booking
-
 from django.views.decorators.csrf import csrf_exempt
-
 from django.http import Http404
 from django.shortcuts import render, redirect
+from .models import Booking
 from .forms import BookingForm, CommentForm
 from .models import Menu, UserComments
-import traceback
-
 # Create your views here.
 
 
@@ -71,11 +66,8 @@ def bookings(request):
         except ValueError:
             return JsonResponse({'success': False, 'error': 'Invalid time format. It must be in HH:MM format.'})
 
-        exist = Booking.objects.filter(
-            reservation_date=data['reservation_date'],
-            reservation_slot=reservation_slot
-        ).exists()
-
+        exist = Booking.objects.filter(reservation_date=data['reservation_date']).filter(
+            reservation_slot=reservation_slot).exists()
         if not exist:
             booking = Booking(
                 first_name=data['first_name'],
@@ -87,18 +79,12 @@ def bookings(request):
             booking.save()
             return JsonResponse({'success': True})
         else:
-            return JsonResponse({'success': False, 'error': 'Reservation already exists for this time slot.'})
+            return JsonResponse({'success': False, 'error': 'This slot is already booked.'})
 
     date = request.GET.get('date', datetime.today().date())
     bookings = Booking.objects.filter(reservation_date=date)
-    booking_list = [{
-        'first_name': b.first_name,
-        'last_name': b.last_name,
-        'guest_number': b.guest_number,
-        'reservation_date': b.reservation_date.isoformat(),
-        'reservation_slot': b.reservation_slot.strftime('%H:%M'),
-    } for b in bookings]
-    return JsonResponse(booking_list, safe=False)
+    booking_json = serializers.serialize('json', bookings)
+    return HttpResponse(booking_json, content_type='application/json')
 
 # Comments View
 

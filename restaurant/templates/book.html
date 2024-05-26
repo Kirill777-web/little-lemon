@@ -60,6 +60,10 @@
         let reserved_slots = [];
         let bookings = '';
 
+        if (!Array.isArray(data)) {
+          throw new Error('Expected an array but got ' + JSON.stringify(data));
+        }
+
         data.forEach(item => {
           reserved_slots.push(item.fields.reservation_slot);
           bookings += `<p>${item.fields.first_name} - ${formatTime(item.fields.reservation_slot)}</p>`;
